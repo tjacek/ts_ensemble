@@ -11,18 +11,13 @@ def compute(in_path,out_path,upsample=False):
         out_i=out_path+'/'+name_i
         np.savetxt(out_i,feat_seq_i,delimiter=',')
 
-def extract(frames,feat_type='max_z'):
+def extract(frames):
     pclouds=prepare_pclouds(frames)
-    if(feat_type=='max_z'):
-        feats0=np.array([max_z(pcloud_i) for pcloud_i in pclouds])
-        return feats0
-#    pclouds=outliner(pclouds)
-#    feats0=np.array([max_z(pcloud_i) for pcloud_i in pclouds])
-#    feats1=np.array([skew_feat(pcloud_i) for pcloud_i in pclouds])
-#    feats2=np.array([corl(pcloud_i) for pcloud_i in pclouds])
-#    feats3=np.array([std_feat(pcloud_i) for pcloud_i in pclouds])
-#    full=np.concatenate([feats0,feats1,feats2,feats3],axis=1)
-#    return feats3
+    pclouds_fun=[max_z,skew_feat,corl,std_feat]
+    feats=[ np.array([fun_i(pcloud_i) for pcloud_i in pclouds])
+                for fun_i in pclouds_fun]
+    full=np.concatenate(feats,axis=1)
+    return full
 
 def prepare_pclouds(frames):
     return [ nonzero_points(frame_i) for frame_i in frames]
@@ -49,7 +44,6 @@ def std_feat(points):
     return list(np.std(points,axis=1))
 
 def skew_feat(points):
-#    std_i=list(np.std(points,axis=1))
     skew_i=list(skew(points,axis=1))
     return skew_i
 
