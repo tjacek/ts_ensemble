@@ -1,6 +1,6 @@
 import numpy as np
 from scipy.stats import skew,pearsonr
-import imgs,files,pclouds
+import imgs,files#,pclouds
 
 def compute(in_path,out_path,upsample=False):
     seq_dict=imgs.read_seqs(in_path)
@@ -25,9 +25,7 @@ def extract(frames,feat_type='max_z'):
 #    return feats3
 
 def prepare_pclouds(frames):
-    pc_frames=[pclouds.nonzero_points(frame_i) for frame_i in frames]
-    center=pclouds.center_of_mass(pc_frames)
-    return [(pcloud_i.T-center).T for pcloud_i in pc_frames]
+    return [ nonzero_points(frame_i) for frame_i in frames]
 
 def get_max(pclouds):
     return np.amax([ np.amax(pcloud_i,axis=1) 
@@ -39,8 +37,8 @@ def outliner(pclouds):
     pclouds=[ (pcloud_i.T/pc_max).T for pcloud_i in pclouds]
     return pclouds
 
-#def area(frame_i):
-#    return [np.count_nonzero(frame_i)/np.prod(frame_i.shape)]
+def area(frame_i):
+    return [np.count_nonzero(frame_i)/np.prod(frame_i.shape)]
 
 def max_z(points):
     max_index=np.argmax(points[2])
@@ -59,5 +57,12 @@ def corl(points):
     x,y,z=points[0],points[1],points[2]
     return [pearsonr(x,y)[0],pearsonr(z,y)[0],pearsonr(x,z)[0]]
 
+def nonzero_points(frame_i):
+    xy_nonzero=np.nonzero(frame_i)
+    z_nozero=frame_i[xy_nonzero]
+    xy_nonzero,z_nozero=np.array(xy_nonzero),z_nozero
+    x= xy_nonzero[0] #/ frame_i.shape[0]
+    y= xy_nonzero[1] #/ frame_i.shape[1]
+    return np.array([x,y,z_nozero])
 
-compute("../MHAD3/box","../MHAD3/seqs/max_z")
+compute("../MSR/box","../MSR/seqs")
