@@ -29,6 +29,15 @@ def ens_upsample(in_path,out_path,size=64):
         upsample(in_i,out_i,size)
 
 def upsample(in_path,out_path,size=64):
-    seq_dict=single.read_frame_feats(in_path)   
     spline=SplineUpsampling(size)
     seq_dict={ name_i:spline(seq_i) for name_i,seq_i in seq_dict.items()}
+
+def get_seqs(in_path):
+    paths=files.top_files(in_path)
+    seqs=[]
+    for path_i in paths:
+        with open(path_i, 'r') as content_file:
+            seqs.append(content_file.read())
+
+
+get_seqs('../MSR/seqs')
