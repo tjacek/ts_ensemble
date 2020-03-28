@@ -36,8 +36,8 @@ def get_seqs(in_path):
     paths=files.top_files(in_path)
     seqs=[]
     for path_i in paths:
-        with open(path_i, 'r') as content_file:
-            seqs.append(content_file.read())
-
+        data_i=np.genfromtxt(path_i, dtype=float, delimiter=",")
+        seqs.append(data_i)
+    return seqs
 
 get_seqs('../MSR/seqs')
