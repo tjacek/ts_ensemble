@@ -36,7 +36,11 @@ def get_seqs(in_path):
     paths=files.top_files(in_path)
     seqs=[]
     for path_i in paths:
-        data_i=np.genfromtxt(path_i, dtype=float, delimiter=",")
+        postfix=path_i.split(".")[-1]
+        if(postfix=="npy"):
+            ts_i=np.load(path_i)
+        else:
+            data_i=np.genfromtxt(path_i, dtype=float, delimiter=",")
         seqs.append(data_i)
     return seqs
 
