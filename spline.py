@@ -22,15 +22,18 @@ class SplineUpsampling(object):
             cs=CubicSpline(old_x,feat_i)
             return cs(old_x)
 
-def ens_upsample(in_path,out_path,size=64):
-    files.make_dir(out_path)
-    for i,in_i in enumerate(files.top_files(in_path)):
-        out_i="%s/nn%d"%(out_path,i)
-        upsample(in_i,out_i,size)
+#def ens_upsample(in_path,out_path,size=64):
+#    files.make_dir(out_path)
+#    for i,in_i in enumerate(files.top_files(in_path)):
+#        out_i="%s/nn%d"%(out_path,i)
+#        upsample(in_i,out_i,size)
 
-def upsample(in_path,out_path,size=64):
+def upsample(in_path,out_path,size=128):
+    seq_dict=get_seqs(in_path)
+    print(len(seq_dict))
     spline=SplineUpsampling(size)
     seq_dict={ name_i:spline(seq_i) for name_i,seq_i in seq_dict.items()}
+    save_seqs(seq_dict,out_path)
 
 def get_seqs(in_path):
     paths=files.top_files(in_path)
@@ -41,7 +44,14 @@ def get_seqs(in_path):
             ts_i=np.load(path_i)
         else:
             data_i=np.genfromtxt(path_i, dtype=float, delimiter=",")
-        seqs.append(data_i)
-    return seqs
+        name_i=path_i.split('/')[-1]
+        seqs.append(  (name_i,data_i))
+    return dict(seqs)
 
-get_seqs('../MSR/seqs')
+def save_seqs(seq_dict,out_path):
+    files.make_dir(out_path)
+    for name_i,seq_i in seq_dict.items():
+        out_i="%s/%s" %(out_path,name_i)
+        np.savetxt(out_i,seq_i,fmt='%.4e', delimiter=',')
+
+upsample('../MSR/seqs','test')
