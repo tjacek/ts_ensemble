@@ -29,29 +29,11 @@ class SplineUpsampling(object):
 #        upsample(in_i,out_i,size)
 
 def upsample(in_path,out_path,size=128):
-    seq_dict=get_seqs(in_path)
+    seq_dict=files.get_seqs(in_path)
     print(len(seq_dict))
     spline=SplineUpsampling(size)
     seq_dict={ name_i:spline(seq_i) for name_i,seq_i in seq_dict.items()}
-    save_seqs(seq_dict,out_path)
+    files.save_seqs(seq_dict,out_path)
 
-def get_seqs(in_path):
-    paths=files.top_files(in_path)
-    seqs=[]
-    for path_i in paths:
-        postfix=path_i.split(".")[-1]
-        if(postfix=="npy"):
-            ts_i=np.load(path_i)
-        else:
-            data_i=np.genfromtxt(path_i, dtype=float, delimiter=",")
-        name_i=path_i.split('/')[-1]
-        seqs.append(  (name_i,data_i))
-    return dict(seqs)
-
-def save_seqs(seq_dict,out_path):
-    files.make_dir(out_path)
-    for name_i,seq_i in seq_dict.items():
-        out_i="%s/%s" %(out_path,name_i)
-        np.savetxt(out_i,seq_i,fmt='%.4e', delimiter=',')
 
 upsample('../MSR/seqs','test')
