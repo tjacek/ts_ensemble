@@ -40,6 +40,7 @@ def get_seqs(in_path):
         else:
             data_i=np.genfromtxt(path_i, dtype=float, delimiter=",")
         name_i=path_i.split('/')[-1]
+        name_i=clean_str(name_i)
         seqs.append(  (name_i,data_i))
     return dict(seqs)
 
@@ -48,3 +49,14 @@ def save_seqs(seq_dict,out_path):
     for name_i,seq_i in seq_dict.items():
         out_i="%s/%s" %(out_path,name_i)
         np.savetxt(out_i,seq_i,fmt='%.4e', delimiter=',')
+
+def split(seq_dict,selector=None):
+    if(not selector):
+        selector=lambda name_i: int(name_i.split("_")[1])%2!=0
+    train,test={},{}  
+    for name_i,seq_i in seq_dict.items():
+        if(selector(name_i)):
+            train[name_i]=seq_i
+        else:
+            test[name_i]=seq_i
+    return train,test
