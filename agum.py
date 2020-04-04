@@ -1,7 +1,7 @@
 import numpy as np
 #import itertools
-import dataset,unify,smooth
-import filtr,agum.warp
+#import dataset,unify,smooth
+import files#,agum.warp
 
 class Agum(object):
     def __init__(self,agum_func,sum=True):
@@ -59,19 +59,35 @@ def get_warp(type,sum=True):
 def scale_agum(data_i):
 	return [scale_j*data_i for scale_j in [0.5,2.0]]
 
-def sigma_agum(data_i):
-    sigma_i=np.std(data_i)	
-    return [data_i+sigma_i,data_i-sigma_i]
+#def sigma_agum(data_i):
+#    sigma_i=np.std(data_i)	
+#    return [data_i+sigma_i,data_i-sigma_i]
 
-def gauss_agum(n=4):
-    if(n<2):
-        return Agum([agum.warp.WrapSeq()])
-    kerns=[]
-    for sigma_i in range(1,n):
-        x_i=np.arange(-3*sigma_i, 3*sigma_i, 1.0)
-        kerns.append(np.exp( -(x_i/sigma_i)**2/2) )
-    def gauss_helper(data_i):
-        smooth_seq=[np.convolve(data_i,kern_i,mode="same") for kern_i in kerns]
-        smooth_seq.append(data_i)
-        return smooth_seq
-    return Agum([agum.warp.WrapSeq(),gauss_helper],sum=False)
+#def gauss_agum(n=4):
+#    if(n<2):
+#        return Agum([agum.warp.WrapSeq()])
+#    kerns=[]
+#    for sigma_i in range(1,n):
+#        x_i=np.arange(-3*sigma_i, 3*sigma_i, 1.0)
+#        kerns.append(np.exp( -(x_i/sigma_i)**2/2) )
+#    def gauss_helper(data_i):
+#        smooth_seq=[np.convolve(data_i,kern_i,mode="same") for kern_i in kerns]
+#        smooth_seq.append(data_i)
+#        return smooth_seq
+#    return Agum([agum.warp.WrapSeq(),gauss_helper],sum=False)
+
+def apply_agum(in_path,out_path):
+    seq_dict=files.get_seqs(in_path)
+    train,test=files.split(seq_dict)
+    agum_train=[]
+    for name_i,seq_i in seq_dict.items():
+        new_seqs=scale_agum(seq_i)
+        for j,seq_j in enumerate(new_seqs):
+            name_j="%s_%d" % (name_i,j)
+            agum_train.append((name_j,seq_j))
+    agum_train=dict(agum_train)
+    files.save_seqs(seq_dict,out_path)
+    print(len(agum_train))  
+
+
+apply_agum('test','agum')
