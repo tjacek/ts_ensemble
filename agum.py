@@ -1,93 +1,49 @@
 import numpy as np
-#import itertools
-#import dataset,unify,smooth
-import files#,agum.warp
+import files,spline
 
-class Agum(object):
-    def __init__(self,agum_func,sum=True):
-        self.agum_func=agum_func
-        self.upsampling=smooth.SplineUpsampling()
-        self.sum=sum
+class WrapSeq(object):
+    def __init__(self,seq_len=128,sub_seq=32):
+        self.seq_len=seq_len
+        self.sub_seq_len=sub_seq
+        self.main_spline=spline.SplineUpsampling(self.seq_len)
+        self.warps=[start_warp,end_warp]
+        self.splines=[spline.SplineUpsampling(2*sub_seq),spline.SplineUpsampling(sub_seq/2)]
 
-    def __call__(self,ts_dataset):
-        train,test=self.prepare(ts_dataset)
-        if(self.sum):
-            agum=self.sum_agum(train)
-            agum=train+test+agum
-        else:
-            agum=self.product_agum(train)
-            agum=test+agum
-        return dataset.TSDataset(dict(agum) ,ts_dataset.name+'_agum')
-
-    def sum_agum(self,train):
+    def __call__(self,seq_i):
         agum=[]
-        for name_i,data_i in train:
-            agum_data=[]
-            for agum_j in self.agum_func:
-                agum_data+=agum_j(data_i)
-            agum+=[ (name_i+'_'+str(j),agum_j)
-                    for j,agum_j in enumerate(agum_data)]    	
+        for warp_j in self.warps:
+            for spline_k in self.splines:
+                agum.append( warp_j(seq_i,self.sub_seq_len,spline_k)) 
+        agum=[self.main_spline(new_seq_i)
+                for new_seq_i in agum]
         return agum
 
-    def product_agum(self,train):
-        for func_i in self.agum_func:
-            agum_train=[]
-            for j,(name_j,data_j) in enumerate(train):
-                agum_seq=self.agum_sample(func_i,data_j)
-                agum_train+=[ (name_j+'_'+str(k),data_k)
-                                for k,data_k in enumerate(agum_seq)]  
-            train=agum_train           
-        return train
+def start_warp(seq_i,start,spline):
+    sub_i,rest_i=seq_i[:start],seq_i[start:]
+    sub_i=spline(sub_i)
+    return np.concatenate([sub_i,rest_i])
 
-    def agum_sample(self,func_i,data_j):
-        agum_ts=[ func_i(data_t) for data_t in data_j.T]
-        agum_ts=list(zip(*agum_ts))
-        return [ np.array(ts).T for ts in agum_ts]
-
-    def prepare(self,ts_dataset):
-        ts_dataset=ts_dataset(self.upsampling)
-        train,test=filtr.split(ts_dataset.ts_names())
-        train=[ (train_i,ts_dataset[train_i]) for train_i in train]
-        test=[ (test_i,ts_dataset[test_i]) for test_i in test]
-        return train,test
-
-def get_warp(type,sum=True):
-    if(type=="scale"):
-        return Agum([agum.warp.WrapSeq(),scale_agum],sum=sum)
-    return Agum([agum.warp.WrapSeq()],sum=sum)
+def end_warp(seq_i,end,spline):
+    cut_point= seq_i.shape[0]-end
+    sub_i,rest_i=seq_i[:cut_point],seq_i[cut_point:]
+    rest_i=spline(rest_i)
+    return np.concatenate([sub_i,rest_i])
 
 def scale_agum(data_i):
-	return [scale_j*data_i for scale_j in [0.5,2.0]]
-
-#def sigma_agum(data_i):
-#    sigma_i=np.std(data_i)	
-#    return [data_i+sigma_i,data_i-sigma_i]
-
-#def gauss_agum(n=4):
-#    if(n<2):
-#        return Agum([agum.warp.WrapSeq()])
-#    kerns=[]
-#    for sigma_i in range(1,n):
-#        x_i=np.arange(-3*sigma_i, 3*sigma_i, 1.0)
-#        kerns.append(np.exp( -(x_i/sigma_i)**2/2) )
-#    def gauss_helper(data_i):
-#        smooth_seq=[np.convolve(data_i,kern_i,mode="same") for kern_i in kerns]
-#        smooth_seq.append(data_i)
-#        return smooth_seq
-#    return Agum([agum.warp.WrapSeq(),gauss_helper],sum=False)
+    return [scale_j*data_i for scale_j in [0.5,2.0]]
 
 def apply_agum(in_path,out_path):
     seq_dict=files.get_seqs(in_path)
     train,test=files.split(seq_dict)
     agum_train=[]
+    agum=WrapSeq()
     for name_i,seq_i in seq_dict.items():
-        new_seqs=scale_agum(seq_i)
+        new_seqs= agum(seq_i) #scale_agum(seq_i)
         for j,seq_j in enumerate(new_seqs):
             name_j="%s_%d" % (name_i,j)
             agum_train.append((name_j,seq_j))
     agum_train=dict(agum_train)
-    files.save_seqs(seq_dict,out_path)
+    files.save_seqs(agum_train,out_path)
     print(len(agum_train))  
-
 
 apply_agum('test','agum')
