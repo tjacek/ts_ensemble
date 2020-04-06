@@ -50,6 +50,15 @@ def save_seqs(seq_dict,out_path):
         out_i="%s/%s" %(out_path,name_i)
         np.savetxt(out_i,seq_i,fmt='%.4e', delimiter=',')
 
+def save_feats(X,names,out_path):
+    feats=""
+    for i,name_i in enumerate(names):
+        data_i=np.array2string(X[i])
+        feats+="%s#%s"%(data_i,name_i)
+    f= open(out_path,"w+")
+    f.write(feats)
+    f.close()
+
 def split(seq_dict,selector=None):
     if(not selector):
         selector=lambda name_i: int(name_i.split("_")[1])%2!=0
