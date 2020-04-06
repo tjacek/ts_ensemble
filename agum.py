@@ -1,4 +1,4 @@
-import numpy as np
+import numpy as np,itertools
 import files,spline
 
 class WrapSeq(object):
@@ -36,14 +36,17 @@ def apply_agum(in_path,out_path):
     seq_dict=files.get_seqs(in_path)
     train,test=files.split(seq_dict)
     agum_train=[]
-    agum=WrapSeq()
-    for name_i,seq_i in seq_dict.items():
-        new_seqs= agum(seq_i) #scale_agum(seq_i)
+    agum=[scale_agum,WrapSeq()]
+    for name_i,seq_i in train.items():
+        agum_train.append((name_i,seq_i))
+        new_seqs= [ agum_k(seq_i) for agum_k in agum]
+        new_seqs = list(itertools.chain(*new_seqs))
         for j,seq_j in enumerate(new_seqs):
             name_j="%s_%d" % (name_i,j)
             agum_train.append((name_j,seq_j))
-    agum_train=dict(agum_train)
-    files.save_seqs(agum_train,out_path)
-    print(len(agum_train))  
+    agum_data= agum_train + list(test.items())
+    agum_data=dict(agum_data)
+    files.save_seqs(agum_data,out_path)
+    print(len(agum_data))  
 
 apply_agum('test','agum')
