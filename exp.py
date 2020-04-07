@@ -4,14 +4,16 @@ from sklearn.metrics import accuracy_score,classification_report
 from keras.models import Model
 import deep,files
 
-def simple_exp(in_path,n_epochs=1000):
+def simple_exp(in_path,out_path=None,n_epochs=1000):
     seq_dict=files.get_seqs(in_path)
     train,test=files.split(seq_dict)
     X,y,names,params=prepare_data(train)
     model=deep.make_conv(params)
     model.fit(X,y,epochs = n_epochs)
-#    test_model(model,test)
-    extrac_feats(model,seq_dict,"feats.txt")
+    if(out_path):
+        extrac_feats(model,seq_dict,out_path)
+    else:
+    	test_model(model,test)
 
 def prepare_data(seq_dict):
     names=seq_dict.keys()
@@ -37,8 +39,6 @@ def extrac_feats(model,seq_dict,out_path):
                 outputs=model.get_layer("hidden").output)
     X,y,names,params=prepare_data(seq_dict)
     X=extractor.predict(X) 
-#    new_seqs={ name_i:extractor.predict(X[i]) 
-#        for i,name_i in enumerate(names)}
     files.save_feats(X,names,out_path)
 
-simple_exp("agum")
+#simple_exp("agum")

@@ -1,5 +1,5 @@
 import random
-import files
+import files,exp
 
 def make_bagset(in_path,out_path,k=7):
     seq_dict=files.get_seqs(in_path)
@@ -19,4 +19,11 @@ def resample(seq_dict):
     bag_dict.update(test)
     return bag_dict
 
-make_bagset("agum","bagging",k=7)
+def train_bag(in_path,out_path,n_epochs=1000):
+    files.make_dir(out_path)
+    for in_i in files.top_files(in_path):
+        out_i="%s/%s" % (out_path,in_i.split("/")[-1])
+        exp.simple_exp(in_i,out_i,n_epochs=n_epochs)
+
+#make_bagset("agum","bagging",k=7)
+train_bag("bagging","bag_feats")
