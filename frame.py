@@ -1,6 +1,6 @@
 import numpy as np
 from scipy.stats import skew,pearsonr
-import imgs,files#,pclouds
+import imgs,files
 
 def compute(in_path,out_path,upsample=False):
     seq_dict=imgs.read_seqs(in_path)
@@ -14,10 +14,16 @@ def compute(in_path,out_path,upsample=False):
 def extract(frames):
     pclouds=prepare_pclouds(frames)
     pclouds_fun=[max_z,skew_feat,corl,std_feat]
-    feats=[ np.array([fun_i(pcloud_i) for pcloud_i in pclouds])
-                for fun_i in pclouds_fun]
-    full=np.concatenate(feats,axis=1)
+    feats=make_feat_seq(pclouds,pclouds_fun)
+    frame_fun=[area]
+    frame_feats=make_feat_seq(frames,frame_fun)
+    full=np.concatenate(feats+frame_feats,axis=1)
     return full
+
+def make_feat_seq(frames,funcs):
+    return [np.array([fun_j(frame_i)
+                for frame_i in frames])
+                    for fun_j in funcs]
 
 def prepare_pclouds(frames):
     return [ nonzero_points(frame_i) for frame_i in frames]
