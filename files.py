@@ -53,8 +53,9 @@ def save_seqs(seq_dict,out_path):
 def save_feats(X,names,out_path):
     feats=""
     for i,name_i in enumerate(names):
-        data_i=np.array2string(X[i])
-        feats+="%s#%s"%(data_i,name_i)
+        data_i=np.array2string(X[i],separator=",")
+        data_i=re.sub(r"\[|\]|\s+","",data_i)
+        feats+="%s#%s\n"%(data_i,name_i)
     f= open(out_path,"w+")
     f.write(feats)
     f.close()
