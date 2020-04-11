@@ -60,6 +60,15 @@ def save_feats(X,names,out_path):
     f.write(feats)
     f.close()
 
+def get_feats(in_path):
+    print(in_path)
+    f= open(in_path,"r+")
+    lines=f.readlines()
+    lines=[ line_i.split("#") for line_i in lines]
+    feat_dict={ name_i:np.fromstring(data_i,sep=",")
+                    for data_i,name_i in lines}
+    return feat_dict
+
 def split(seq_dict,selector=None):
     if(not selector):
         selector=lambda name_i: int(name_i.split("_")[1])%2!=0
