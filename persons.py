@@ -6,8 +6,10 @@ import files
 def orth_selection(in_path):
     datasets=[ files.get_feats(path_i)
         for path_i in files.top_files(in_path)]
-    acc=[ get_acc(data_i) for data_i in datasets]
+    acc=np.array([ get_acc(data_i) for data_i in datasets])
+    acc= (acc-np.mean(acc))/np.std(acc)    
     print(acc)
+    return np.argsort(acc)
 
 def get_acc(data_i):
     train_i,test_i=files.split(data_i)
@@ -20,4 +22,4 @@ def get_acc(data_i):
     return acc_i
 
 
-orth_selection("../MSR/sub_feats")
+print(orth_selection("../MSR/sub_feats"))
