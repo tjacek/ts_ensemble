@@ -29,7 +29,13 @@ def prepare_pclouds(frames):
     frames=np.array(frames)
     frames[frames!=0]-= (np.amin(frames[frames!=0])-1)
     frames=frames/np.amax(frames)
-    return [ nonzero_points(frame_i) for frame_i in frames]
+    pclouds=[ nonzero_points(frame_i) for frame_i in frames]
+    center_of_mass(pclouds)
+    return pclouds
+
+def center_of_mass(pclouds):
+    arr_i=np.concatenate(pclouds,axis=1)
+    return np.mean(arr_i,axis=1)
 
 def get_max(pclouds):
     return np.amax([ np.amax(pcloud_i,axis=1) 
@@ -68,4 +74,4 @@ def nonzero_points(frame_i):
     y= xy_nonzero[1] / frame_i.shape[1]
     return np.array([x,y,z_nozero])
 
-compute("../MSR/box","../MSR/seqs")
+compute("../MSR/box","../MSR/seqs_")
