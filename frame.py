@@ -26,11 +26,26 @@ def make_feat_seq(frames,funcs):
                     for fun_j in funcs]
 
 def prepare_pclouds(frames):
+    frames=z_normalize(frames)
+    pclouds=[ nonzero_points(frame_i) for frame_i in frames]
+#    pclouds=out_normalize(pclouds)
+    return pclouds
+
+def z_normalize(frames):
     frames=np.array(frames)
     frames[frames!=0]-= (np.amin(frames[frames!=0])-1)
     frames=frames/np.amax(frames)
-    pclouds=[ nonzero_points(frame_i) for frame_i in frames]
-    center_of_mass(pclouds)
+    return frames 
+
+def out_normalize(pclouds):
+    pclouds=center_normalize(pclouds)
+    return outliner(pclouds)
+
+def center_normalize(pclouds):
+    center=center_of_mass(pclouds)
+    pclouds=[(pcloud_i.T-center).T for pcloud_i in pclouds ]
+#    pclouds=[(pcloud_i.T/ np.amax(pcloud_i,axis=1)).T 
+#                 for pcloud_i in pclouds ]
     return pclouds
 
 def center_of_mass(pclouds):
@@ -74,4 +89,4 @@ def nonzero_points(frame_i):
     y= xy_nonzero[1] / frame_i.shape[1]
     return np.array([x,y,z_nozero])
 
-compute("../MSR/box","../MSR/seqs_")
+compute("../MSR/box","../MSR1/seqs")
