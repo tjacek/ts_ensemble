@@ -33,10 +33,13 @@ def scale_agum(data_i):
     return [scale_j*data_i for scale_j in [0.5,2.0]]
 
 def apply_agum(in_path,out_path):
+    agum=[scale_agum,WrapSeq()]
+    return agum_template(in_path,out_path,agum)
+
+def agum_template(in_path,out_path,agum):
     seq_dict=files.get_seqs(in_path)
     train,test=files.split(seq_dict)
     agum_train=[]
-    agum=[scale_agum,WrapSeq()]
     for name_i,seq_i in train.items():
         agum_train.append((name_i,seq_i))
         new_seqs= [ agum_k(seq_i) for agum_k in agum]
@@ -49,4 +52,5 @@ def apply_agum(in_path,out_path):
     files.save_seqs(agum_data,out_path)
     print(len(agum_data))  
 
-apply_agum('test','agum')
+if __name__ == "__main__":
+    apply_agum('../MSR1/spline','../MSR1/agum')
