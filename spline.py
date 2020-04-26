@@ -35,5 +35,5 @@ def upsample(in_path,out_path,size=128):
     seq_dict={ name_i:spline(seq_i) for name_i,seq_i in seq_dict.items()}
     files.save_seqs(seq_dict,out_path)
 
-
-upsample('../MSR/seqs','test')
+if __name__=="main":
+    upsample('../MSR1/seqs','../MSR1/spline')

@@ -89,4 +89,5 @@ def nonzero_points(frame_i):
     y= xy_nonzero[1] / frame_i.shape[1]
     return np.array([x,y,z_nozero])
 
-compute("../MSR/box","../MSR1/seqs")
+if __name__=="main":
+    compute("../MSR/box","../MSR1/seqs")

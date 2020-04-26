@@ -1,44 +1,17 @@
-import numpy as np
-import keras.utils
-from sklearn.metrics import accuracy_score,classification_report
-from keras.models import Model
-import deep,files
+import frame,files
+import spline,block,bag
 
-def simple_exp(in_path,out_path=None,n_epochs=1000):
-    seq_dict=files.get_seqs(in_path)
-    train,test=files.split(seq_dict)
-    X,y,names,params=prepare_data(train)
-    model=deep.make_conv(params)
-    model.fit(X,y,epochs = n_epochs)
-    if(out_path):
-        extrac_feats(model,seq_dict,out_path)
-    else:
-    	test_model(model,test)
+def exp(in_path,out_path):
+    files.make_dir(out_path)
+    seq_path= out_path+"/seqs"
+    frame.compute(in_path,seq_path)
+    spline_path= out_path+"/spline"
+    spline.upsample(seq_path,spline_path,size=128)
+    block_path=out_path+"/blocks"
+    block.make_blocks(spline_path,block_path,k=8,t=10)
+    bag_path=out_path+"/bagging"
+    bag.make_bagset(block_path,bag_path,k=7)
+    feat_path=out_path+"/feats"
+    bag.train_bag(bag_path,feat_path,n_epochs=1000)
 
-def prepare_data(seq_dict):
-    names=seq_dict.keys()
-    data=list(seq_dict.values())
-    X=np.array(data)
-    X=np.expand_dims(X,axis=-1)
-    y=[ int(name_i.split("_")[0])-1 for name_i in names] 
-    params={'ts_len':X.shape[1], 'n_feats': X.shape[2],
-                'n_cats':max(y)+1}
-    y=keras.utils.to_categorical(y)
-    return X,y,names,params
-
-def test_model(model,test):
-    X,y_true,names,params=prepare_data(test)
-    y_pred=model.predict(X)
-    y_pred = np.argmax(y_pred, axis=-1)
-    y_true = np.argmax(y_true, axis=-1)
-    report=classification_report(y_pred,y_true,digits=4)
-    print(report)
-
-def extrac_feats(model,seq_dict,out_path):
-    extractor=Model(inputs=model.input,
-                outputs=model.get_layer("hidden").output)
-    X,y,names,params=prepare_data(seq_dict)
-    X=extractor.predict(X) 
-    files.save_feats(X,names,out_path)
-
-#simple_exp("agum")
+exp("../MSR/box","simple")

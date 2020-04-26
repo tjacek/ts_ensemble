@@ -15,4 +15,5 @@ def sample_blocks(seq_i,k):
     new_seq_j=np.concatenate(blocks,axis=0)
     return new_seq_j
 
-make_blocks('../MSR1/spline','../MSR2/block1')
+if __name__=="main":
+    make_blocks('../MSR1/spline','../MSR2/block1')
