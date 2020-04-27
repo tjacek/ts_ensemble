@@ -1,5 +1,11 @@
-import frame,files
+import preproc,frame,files
 import spline,block,bag
+
+def scaled_exp(in_path,out_path):
+    files.make_dir(out_path)
+    scale_path=out_path+"/scale"
+    preproc.scaled_frames(in_path,scale_path)
+    exp(scale_path,out_path)
 
 def exp(in_path,out_path):
     files.make_dir(out_path)
@@ -14,4 +20,5 @@ def exp(in_path,out_path):
     feat_path=out_path+"/feats"
     bag.train_bag(bag_path,feat_path,n_epochs=1000)
 
-exp("../MSR/box","simple")
+#exp("../MSR/box","simple")
+scaled_exp("../MSR/box","scaled")
