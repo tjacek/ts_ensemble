@@ -7,6 +7,12 @@ def scaled_exp(in_path,out_path):
     preproc.scaled_frames(in_path,scale_path)
     exp(scale_path,out_path)
 
+def smooth_exp(in_path,out_path):
+    files.make_dir(out_path)
+    scale_path=out_path+"/smooth"
+    preproc.smooth_frames(in_path,scale_path)
+    exp(scale_path,out_path)
+
 def exp(in_path,out_path):
     files.make_dir(out_path)
     seq_path= out_path+"/seqs"
@@ -21,4 +27,4 @@ def exp(in_path,out_path):
     bag.train_bag(bag_path,feat_path,n_epochs=1000)
 
 #exp("../MSR/box","simple")
-scaled_exp("../MSR/box","scaled")
+smooth_exp("../MSR/box","gauss")
