@@ -2,9 +2,25 @@ import numpy as np
 from scipy.stats import skew,pearsonr
 import imgs,files
 
+class Extract(object):
+    def __init__(self,funcs=None):
+        if(not funcs):
+            funcs=[max_z,skew_feat,corl,std_feat]
+        self.funcs=funcs
+
+    def __call__(self,frames):
+        pclouds=prepare_pclouds(frames)
+#        pclouds_fun=[max_z,skew_feat,corl,std_feat]
+        feats=make_feat_seq(pclouds,self.funcs)
+        frame_fun=[area]
+        frame_feats=make_feat_seq(frames,frame_fun)
+        full=np.concatenate(feats+frame_feats,axis=1)
+        return full
+
 def compute(in_path,out_path,upsample=False):
     seq_dict=imgs.read_seqs(in_path)
     files.make_dir(out_path)
+    extract=Extract()
     for name_i,seq_i in seq_dict.items():
         feat_seq_i=extract(seq_i)
         name_i=name_i.split('.')[0]+'.txt'
@@ -89,5 +105,6 @@ def nonzero_points(frame_i):
     y= xy_nonzero[1] / frame_i.shape[1]
     return np.array([x,y,z_nozero])
 
-if __name__=="main":
-    compute("../MSR/box","../MSR1/seqs")
+#if __name__=="main":
+print("OK")
+compute("box","seqs")
