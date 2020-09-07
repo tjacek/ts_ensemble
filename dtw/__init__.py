@@ -3,6 +3,12 @@ import files
 
 def gen_pairs(in_path):
     seq_dict=files.get_seqs(in_path)
+    pairs=list(seq_dict.items())
+    names=[]
+    for i,pair_i in enumerate(pairs):
+        for j in range(0,i):
+            names.append(( pair_i[0],pairs[j][0]))
+    print(len(names)) 
 
 def dtw_metric(s,t):
     dtw,n,m=prepare_matrix(s,t)
