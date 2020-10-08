@@ -1,6 +1,17 @@
 import numpy as np
 import os,re
 
+class FeatDict(dict):
+    def __init__(self, arg):
+        super(FeatDict, self).__init__(arg)
+        
+    def as_dataset(self):
+        names=self.keys()
+        X=[self[name_i] for name_i in names]
+        y=[ int(name_i.split("_")[0])-1 
+                for name_i in names]
+        return np.array(X),y
+
 def top_files(path):
     paths=[ path+'/'+file_i for file_i in os.listdir(path)]
     paths=sorted(paths,key=natural_keys)
@@ -68,7 +79,7 @@ def get_feats(in_path):
     lines=[ line_i.split("#") for line_i in lines]
     feat_dict={ name_i:np.fromstring(data_i,sep=",")
                     for data_i,name_i in lines}
-    return feat_dict
+    return FeatDict(feat_dict)
 
 def split(seq_dict,selector=None):
     if(not selector):
