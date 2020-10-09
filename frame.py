@@ -12,15 +12,15 @@ class Extract(object):
         pclouds=prepare_pclouds(frames)
 #        pclouds_fun=[max_z,skew_feat,corl,std_feat]
         feats=make_feat_seq(pclouds,self.funcs)
-        frame_fun=[area]
+        frame_fun=[]#area]
         frame_feats=make_feat_seq(frames,frame_fun)
         full=np.concatenate(feats+frame_feats,axis=1)
         return full
 
-def compute(in_path,out_path,upsample=False):
+def compute(in_path,out_path,upsample=False,feats=None):
     seq_dict=imgs.read_seqs(in_path)
     files.make_dir(out_path)
-    extract=Extract()
+    extract=Extract([max_z])
     for name_i,seq_i in seq_dict.items():
         feat_seq_i=extract(seq_i)
         name_i=name_i.split('.')[0]+'.txt'
@@ -81,9 +81,10 @@ def outliner(pclouds):
 def area(frame_i):
     return [np.count_nonzero(frame_i)/np.prod(frame_i.shape)]
 
-def max_z(points):
+def max_z(points):  
     max_index=np.argmax(points[2])
     extr=points[:,max_index]
+#    raise Exception(extr)
     return [extr[0],extr[1]]
 
 def std_feat(points):
@@ -107,4 +108,4 @@ def nonzero_points(frame_i):
 
 #if __name__=="main":
 print("OK")
-compute("box","seqs")
+compute("box","max_z2/seqs")
