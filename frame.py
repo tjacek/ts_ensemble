@@ -17,6 +17,10 @@ class Extract(object):
         full=np.concatenate(feats+frame_feats,axis=1)
         return full
 
+def get_extract(feat_set):
+    feats={"max_z":max_z,"skew":skew_feat,"corl":corl}
+    return  Extractor(feats[feat_set])
+
 def compute(in_path,out_path,upsample=False,feats=None):
     seq_dict=imgs.read_seqs(in_path)
     files.make_dir(out_path)
