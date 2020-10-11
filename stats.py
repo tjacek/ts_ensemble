@@ -25,4 +25,4 @@ def time_corl(feat_i):
     x_i=np.arange(float(n_size),step=1.0)
     return scipy.stats.pearsonr(x_i,feat_i)[0]
 
-compute_stats("max_z/seqs","max_z.txt")
+compute_stats("full/seqs","full/feats.txt")

@@ -40,5 +40,5 @@ def jackknife(in_path,out_path):
     files.save_seqs(seq_dict,"%s/full" % out_path)
 
 #make_bagset("../MSR/agum","../MSR/bagging",k=7)
-train_bag("../MSR/subspace","../MSR/sub_feats")
+#train_bag("../MSR/subspace","../MSR/sub_feats")
 #jackknife("../MSR/agum","../MSR/subspace")

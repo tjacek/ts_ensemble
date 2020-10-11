@@ -1,7 +1,6 @@
 import numpy as np
 import pickle
 import files
-#import unify,filtr,feats
 
 class DTWPairs(object):
     def __init__(self,pairs):
@@ -18,10 +17,6 @@ class DTWPairs(object):
             return np.array([ self.pairs[name_i][name_j] 
                                 for name_j in train])
         return {name_i:dtw_helper(name_i) for name_i in all_names} 
-
-#        X=[ dtw_for name_i in all_names]
-#        files.save_feats(X,all_names,out_path)   
-#        return feats.from_dict(feat_dict) 
 
     def distances(self,test,train):
         dist=[[self.pairs[name_i][name_j] 
@@ -46,7 +41,6 @@ def make_dtw_feats(dir_path):
     X=[ dtw_feats[name_i] 
         for name_i in names]
     files.save_feats(X,names,dtw_path)
-#    dtw_feats.save(dtw_path)
 
 def read(in_path):
     with open(in_path, 'rb') as handle:

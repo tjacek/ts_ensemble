@@ -1,5 +1,12 @@
 import preproc,frame,files
 import spline,block,bag
+import dtw
+
+def dtw_exp(in_path,feat_type):
+    files.make_dir(feat_type)
+    seq_path="%s/seqs" % feat_type
+    frame.compute(in_path,seq_path,feat_set=feat_type)
+    dtw.make_dtw_feats(feat_type)
 
 def scaled_exp(in_path,out_path):
     files.make_dir(out_path)
@@ -27,4 +34,5 @@ def exp(in_path,out_path):
     bag.train_bag(bag_path,feat_path,n_epochs=1000)
 
 #exp("../MSR/box","simple")
-smooth_exp("../MSR/box","gauss")
+#smooth_exp("../MSR/box","gauss")
+dtw_exp("box","skew")

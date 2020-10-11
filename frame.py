@@ -19,12 +19,12 @@ class Extract(object):
 
 def get_extract(feat_set):
     feats={"max_z":max_z,"skew":skew_feat,"corl":corl}
-    return  Extractor(feats[feat_set])
+    return  Extract([feats[feat_set]])
 
-def compute(in_path,out_path,upsample=False,feats=None):
+def compute(in_path,out_path,upsample=False,feat_set="max_z"):
     seq_dict=imgs.read_seqs(in_path)
     files.make_dir(out_path)
-    extract=Extract([max_z])
+    extract=get_extract(feat_set) #Extract([max_z])
     for name_i,seq_i in seq_dict.items():
         feat_seq_i=extract(seq_i)
         name_i=name_i.split('.')[0]+'.txt'
@@ -111,5 +111,5 @@ def nonzero_points(frame_i):
     return np.array([x,y,z_nozero])
 
 #if __name__=="main":
-print("OK")
-compute("box","max_z2/seqs")
+#print("OK")
+#compute("box","max_z2/seqs")
