@@ -11,11 +11,13 @@ class DTWPairs(object):
         train,test=files.split(self.pairs)
         return all_names,train,test
 
-    def to_features(self):
+    def to_features(self,subset=None):
         all_names,train,test=self.names()
+        if(not subset):
+            subset=train
         def dtw_helper(name_i):
             return np.array([ self.pairs[name_i][name_j] 
-                                for name_j in train])
+                                for name_j in subset])
         return {name_i:dtw_helper(name_i) for name_i in all_names} 
 
     def distances(self,test,train):
@@ -24,9 +26,14 @@ class DTWPairs(object):
                     for name_j in train]
         return np.array(dist)
 
+    def dtw_vector(self,name_i,names):
+        return np.array([ self.pairs[name_i][name_j] 
+                            for name_j in names])
+
     def save(self,out_path):
         with open(out_path, 'wb') as handle:
             pickle.dump(self.pairs, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
 
 def make_dtw_feats(dir_path):
     seq_path=dir_path+ "/seqs"
@@ -36,7 +43,10 @@ def make_dtw_feats(dir_path):
 
     make_pairwise_distance(ts_dataset).save(pair_path)
     dtw_pairs=read(pair_path)
-    dtw_feats=dtw_pairs.to_features()
+    save_dtw_feats(dtw_path,dtw_pairs)
+
+def save_dtw_feats(dtw_path,dtw_pairs,subset=None):
+    dtw_feats=dtw_pairs.to_features(subset)
     names=list(dtw_feats.keys())
     X=[ dtw_feats[name_i] 
         for name_i in names]

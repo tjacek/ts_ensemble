@@ -1,23 +1,31 @@
 import numpy as np
 import dtw
 
-def separ(in_path):
+def separ(in_path,dtw_path="test"):
     pairs_i=dtw.read(in_path)
-    names=pairs_i.names()[0]
+    names=pairs_i.names()[1]
     cats,cat_dict=get_cats(names)
     cats_clos=get_cats_clos(cats)
-    print(cats_clos.keys())
+    subset=[]
     for name_i in names:
         j=cat_dict[name_i]
         cat_j= cats[j]
         same= pairs_i.dtw_vector(name_i,cat_j)
         cat_clos_j= cats_clos[j]
         other=pairs_i.dtw_vector(name_i,cat_clos_j)
-        print("***********")
-        min_i=np.amin(other)
-        max_i=np.amax(same)
-        if(max_i<min_i):
-            print(name_i)
+        if(3<sucess(same,other)):
+            subset.append(name_i)
+    print(subset)
+    dtw.save_dtw_feats(dtw_path,pairs_i,subset)
+
+def sucess(same,other):
+    min_i=np.amin(other)
+    return sum((same<min_i).astype(int))
+
+#        min_i=np.amin(other)
+#        max_i=np.amax(same)
+#        if(max_i<min_i):
+#            print(name_i)
 
 def get_cats_clos(cats):
     n_cats=len(cats.keys())
