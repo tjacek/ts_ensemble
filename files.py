@@ -4,13 +4,28 @@ import os,re
 class FeatDict(dict):
     def __init__(self, arg):
         super(FeatDict, self).__init__(arg)
+    
+    def dim(self):
+        return list(self.values())[0].shape
+
+    def split(self):
+        train,test=[],[]
+        for name_i in self.keys():
+            person=int(name_i.split("_")[1])
+            if((person%2)==1):
+                train.append(name_i)
+            else:
+                test.append(name_i)
+        train={ name_i:self[name_i] for name_i in train}
+        test={ name_i:self[name_i] for name_i in test}
+        return FeatDict(train),FeatDict(test)
         
     def as_dataset(self):
-        names=self.keys()
+        names=list(self.keys())
         X=[self[name_i] for name_i in names]
         y=[ int(name_i.split("_")[0])-1 
                 for name_i in names]
-        return np.array(X),y
+        return np.array(X),y,names
 
 def top_files(path):
     paths=[ path+'/'+file_i for file_i in os.listdir(path)]
@@ -77,9 +92,22 @@ def get_feats(in_path):
     lines=f.readlines()
     f.close()
     lines=[ line_i.split("#") for line_i in lines]
-    feat_dict={ name_i:np.fromstring(data_i,sep=",")
+    feat_dict={ name_i.strip():np.fromstring(data_i,sep=",")
                     for data_i,name_i in lines}
     return FeatDict(feat_dict)
+
+def unify_feats(seqs,out_path):
+    if(type(seqs[0])==str):
+        seqs=[get_feats(path_i) for path_i in seqs]
+    names=list(seqs[0].keys())
+    def helper(name_i):
+        all_feats=[seq_i[name_i] for seq_i in seqs]
+        all_feats=np.concatenate(all_feats,axis=0)
+        return all_feats
+    feat_dict=FeatDict({ name_i: helper(name_i)
+                for name_i in names})
+    X,y,names=feat_dict.as_dataset()
+    save_feats(X,names,out_path)
 
 def split(seq_dict,selector=None):
     if(not selector):
