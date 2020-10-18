@@ -18,9 +18,16 @@ def train_model(in_path,out_path=None,n_epochs=300,binary=None):
     train,test=feat_dict.split()
     X,y,name=train.as_dataset()
     n_cats=20
-    if(binary):
-        y=[ int(y_i==binary) for y_i in y]
-        n_cats=2
+    if(not binary is None):
+        if(type(binary)==int):
+            binary=[binary]
+        binary={ binary_i:i+1 for i,binary_i in enumerate(binary)}
+        def helper(y_i):
+            if( y_i in binary):
+                return binary[y_i]
+            return 0
+        y=[ helper(y_i) for y_i in y]
+        n_cats=len(binary)+1
     y=keras.utils.to_categorical(y)
     model=basic_model(sample_size,n_dense=64,n_cats=n_cats)
     model.fit(X,y,epochs = n_epochs)
@@ -32,7 +39,6 @@ def basic_model(sample_size,n_dense=64,n_cats=20):
     input_img = Input(shape=(sample_size,))
     x=input_img
     x=Dense(n_dense, activation='relu',name="hidden")(x)#,kernel_regularizer=regularizers.l1(0.01),)(x)
-#    x=Dropout(0.5)(x)
     x=Dense(units=n_cats,activation='softmax')(x)
     model = Model(input_img, x)
     model.compile(loss=keras.losses.categorical_crossentropy,
@@ -40,5 +46,5 @@ def basic_model(sample_size,n_dense=64,n_cats=20):
     model.summary() 
     return model
 
-train_model("skew/dtw","skew/nn",binary=17)
-extract("skew/dtw","skew/nn","skew/deep")
+train_model("full/dtw","full/nn",binary=[3,6,7])
+extract("full/dtw","full/nn","full/deep2")
