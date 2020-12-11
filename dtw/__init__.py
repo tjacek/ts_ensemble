@@ -6,6 +6,12 @@ class DTWPairs(object):
     def __init__(self,pairs):
         self.pairs=pairs
     
+    def __len__(self):
+        return len(self.pairs)
+
+    def __call__(self,name_i,name_j):
+        return self.pairs[name_i][name_j]
+
     def names(self):
         all_names=list(self.pairs.keys())
         train,test=files.split(self.pairs)
