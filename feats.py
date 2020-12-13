@@ -1,5 +1,5 @@
 import numpy as np
-import re
+import os,re
 
 class Name(str):
 	def __new__(cls, p_string):
@@ -112,6 +112,15 @@ def natural_keys(text):
 
 def atoi(text):
     return int(text) if text.isdigit() else text
+
+def top_files(path):
+    paths=[ path+'/'+file_i for file_i in os.listdir(path)]
+    paths=sorted(paths,key=natural_keys)
+    return paths
+
+def person_selector(name_i):
+    person_i=int(name_i.split('_')[1])
+    return person_i%2==1
 
 if __name__ == "__main__":
 	dataset=read_feats('../action/feats')
