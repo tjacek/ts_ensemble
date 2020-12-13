@@ -33,19 +33,12 @@ class Result(object):
 		y_true,y_pred=self.as_labels()
 		return accuracy_score(y_true,y_pred)
 
-def ensemble(in_path):
-	results=[ train_model(path_i,binary=True)
-			for path_i in feats.top_files(in_path)]
-	votes=np.array([ result_i.as_numpy() 
-				for result_i in results])
-	votes=np.sum(votes,axis=0)
-#	print(votes)
-#	votes=np.mean(votes,axis=2)
-#	raise Exception(votes.shape)
-	return Result(results[0].y_true,votes,results[0].names)
+	def report(self):
+		y_true,y_pred=self.as_labels()
+		print(classification_report(y_true, y_pred,digits=4))
 
 def train_model(dataset,binary=True):
-	if(type(dataset)==str):
+	if(type(dataset)==str or type(dataset)==list):
 		dataset=feats.read_feats(dataset)
 	dataset.norm()
 	train,test=dataset.split()
@@ -64,6 +57,3 @@ def simple_exp(dataset):
 	print(result.get_acc())
 #	print(classification_report(y_test, y_pred,digits=4))
 #	print(accuracy_score(y_test,y_pred))
-
-votes=ensemble('../action/ens/feats')
-print(votes.get_acc())
