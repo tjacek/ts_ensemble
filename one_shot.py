@@ -10,7 +10,7 @@ class DTWPairs(object):
 	def group_by(self,get_id):
 		train,test=self.split()
 		groups=defaultdict(lambda:[])
-		for name_i in test:
+		for name_i in train:
 			id_i=get_id(name_i)
 			groups[id_i].append(name_i)
 		return groups
@@ -21,6 +21,10 @@ class DTWPairs(object):
 					for name_j in group]
 		return np.array(dist)
 
+	def get_vector(self,name_i,train):
+		return np.array([ self.pairs[name_i][name_j] 
+							for name_j in train])
+
 	def split(self):
 		train,test=[],[]
 		for name_i in self.pairs.keys():
@@ -30,22 +34,49 @@ class DTWPairs(object):
 				test.append(name_i)
 		return train,test
 
-def cat_id(name_i):
-	return name_i.split('_')[0]
+	def selection(self,get_id,selector):
+		groups=self.group_by(cat_id)
+		selected=[]
+		for group_i in groups.values():
+			selected.append(selector(group_i,self))
+		return  selected
+
+	def with_test(self,names):
+		train,test=self.split()
+		return test+names
 
 def read(in_path):
     with open(in_path, 'rb') as handle:
         return DTWPairs(pickle.load(handle))
 
-def selection(in_path):
-	dtw_pairs=read(in_path)
-	groups=dtw_pairs.group_by(cat_id)
-	selected=[]
-	for group_i in groups.values():
-		dist_i=dtw_pairs.distance_matrix(group_i)
-		dist_i=np.sum(dist_i,axis=0)
-		selected.append(group_i[ np.argmin(dist_i)])
-	print(selected)
+def cat_id(name_i):
+	return name_i.split('_')[0]
 
-selection('../agum/corl/pairs')
-#print(pairs.group_by(cat_id))
+def center_selector(group_i,dtw_pairs):
+	dist_i=dtw_pairs.distance_matrix(group_i)
+	dist_i=np.sum(dist_i,axis=0)
+	return group_i[np.argmin(dist_i)]
+
+def true_one_shot(in_path,out_path):
+	dtw_pairs=read(in_path)
+	names=dtw_pairs.selection(cat_id,center_selector)
+	full=dtw_pairs.with_test(names) #test+names
+	s_feats=feats.Feats()
+	for name_i in full:
+		s_feats[name_i]=dtw_pairs.get_vector(name_i,names)
+	s_feats.save(out_path)
+
+def one_shot(main,add,out_path):
+	dtw_pairs=read(main)
+	names=dtw_pairs.selection(cat_id,center_selector)
+	full=dtw_pairs.with_test(names)
+	add_pairs=read(add)
+	s_feats=feats.Feats()
+	for name_i in full:
+		v0=dtw_pairs.get_vector(name_i,names)
+		v1=add_pairs.get_vector(name_i,names)
+		s_feats[name_i]=np.concatenate([v0,v1],axis=0)
+	s_feats.save(out_path)
+
+#true_one_shot("../MHAD/dtw/max_z/pairs","MHAD/simple/max_z")
+one_shot("../MHAD/dtw/corl/pairs","../MHAD/dtw/max_z/pairs","MHAD/complex/corl")
