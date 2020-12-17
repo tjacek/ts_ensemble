@@ -2,6 +2,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 import voting,train
 
+def acc_exp(common_path,binary_path,binary,out_path):
+    acc=acc_curve(common_path,binary_path,binary)
+    print(acc)
+    print(acc[7])
+    if(out_path):
+        np.savetxt(out_path,acc)
+    show_curve(acc,name="acc_curve",out_path=None)
+
 def acc_curve(common_path,binary_path=None,binary=False):
 	datasets=voting.read_datasets(common_path,binary_path)
 	acc=voting.cross_acc(datasets)
@@ -28,10 +36,9 @@ def show_curve(acc,name="acc_curve",out_path=None):
     return acc
 
 if __name__ == "__main__":
-	common_path=['corl/person',
-             'max_z/person']
+	common_path=['../3DHOI/dtw/max_z/person',
+             '../3DHOI/dtw/corl/person']
 #             '../agum/skew/person']
-	acc=acc_curve(common_path,'../3DHOI/ens/feats',binary=False)
-	show_curve(acc,"3DHOI")
-	print(acc)
+	acc_exp(common_path,'../3DHOI/ens/feats',False,'acc/3DHOI')
+#	print(acc)
 	
