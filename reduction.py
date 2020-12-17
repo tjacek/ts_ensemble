@@ -1,12 +1,25 @@
-import numpy as np
+import os,numpy as np
 import matplotlib.pyplot as plt
 from sklearn import manifold
-import files
+import feats#files
+
+def rec_tsne(in_path,out_path):
+    for root, dirs, content in os.walk(in_path):
+        out_dir=root.replace(in_path,out_path)
+        feats.make_dir(out_dir)
+        if(content):
+            for content_i in content:
+                in_i="%s/%s" % (root,content_i)
+                out_i="%s/%s" % (out_dir,content_i)
+                print(out_i)
+                plot_i= tsne_plot(in_i,show=False)
+                plot_i.savefig(out_i,dpi=1000)
+                plot_i.close()
 
 def tsne_plot(in_path,show=True,color_helper="cat",names=False):
-    feat_dataset= files.get_feats(in_path)
+    feat_dataset= feats.read_feats(in_path).split()[1]  #files.get_feats(in_path)
     tsne=manifold.TSNE(n_components=2,perplexity=30)#init='pca', random_state=0)
-    X,y=feat_dataset.as_dataset()
+    X,y=feat_dataset.to_dataset()
     X=tsne.fit_transform(X)
     names=feat_dataset.info if(names) else None
     color_helper=lambda i,y_i:y_i 
@@ -35,4 +48,5 @@ def plot_embedding(X,y,title="plot",color_helper=None,show=True,names=None):
         plt.show()
     return plt
 
-tsne_plot('max_z/dtw')
+#tsne_plot('max_z/dtw')
+rec_tsne('../MHAD/ens/feats',"../MHAD/ens/plots")
