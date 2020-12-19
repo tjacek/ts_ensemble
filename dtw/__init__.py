@@ -1,66 +1,7 @@
 import numpy as np
 import pickle
-import files
-
-class DTWPairs(object):
-    def __init__(self,pairs):
-        self.pairs=pairs
-    
-    def __len__(self):
-        return len(self.pairs)
-
-    def __call__(self,name_i,name_j):
-        return self.pairs[name_i][name_j]
-
-    def names(self):
-        all_names=list(self.pairs.keys())
-        train,test=files.split(self.pairs)
-        return all_names,train,test
-
-    def to_features(self,subset=None):
-        all_names,train,test=self.names()
-        if(not subset):
-            subset=train
-        def dtw_helper(name_i):
-            return np.array([ self.pairs[name_i][name_j] 
-                                for name_j in subset])
-        return {name_i:dtw_helper(name_i) for name_i in all_names} 
-
-    def distances(self,test,train):
-        dist=[[self.pairs[name_i][name_j] 
-                for name_i in test]
-                    for name_j in train]
-        return np.array(dist)
-
-    def dtw_vector(self,name_i,names):
-        return np.array([ self.pairs[name_i][name_j] 
-                            for name_j in names])
-
-    def save(self,out_path):
-        with open(out_path, 'wb') as handle:
-            pickle.dump(self.pairs, handle, protocol=pickle.HIGHEST_PROTOCOL)
-
-
-def make_dtw_feats(dir_path):
-    seq_path=dir_path+ "/seqs"
-    pair_path=dir_path+ "/pairs"
-    dtw_path=dir_path+ "/dtw"
-    ts_dataset=files.get_seqs(seq_path)
-
-    make_pairwise_distance(ts_dataset).save(pair_path)
-    dtw_pairs=read(pair_path)
-    save_dtw_feats(dtw_path,dtw_pairs)
-
-def save_dtw_feats(dtw_path,dtw_pairs,subset=None):
-    dtw_feats=dtw_pairs.to_features(subset)
-    names=list(dtw_feats.keys())
-    X=[ dtw_feats[name_i] 
-        for name_i in names]
-    files.save_feats(X,names,dtw_path)
-
-def read(in_path):
-    with open(in_path, 'rb') as handle:
-        return DTWPairs(pickle.load(handle))
+from dtaidistance import dtw, dtw_ndim
+import feats
 
 def make_pairwise_distance(ts_dataset):
     names=list(ts_dataset.keys())
@@ -71,27 +12,42 @@ def make_pairwise_distance(ts_dataset):
         print(i)
         for j in range(0,i):
             name_i,name_j=names[i],names[j]
-            distance_ij=dtw_metric(ts_dataset[name_i],ts_dataset[name_j])
+            distance_ij=dtw_ndim.distance(ts_dataset[name_i],ts_dataset[name_j])
             pairs_dict[name_i][name_j]=distance_ij
             pairs_dict[name_j][name_i]=distance_ij
-    return DTWPairs(pairs_dict)
+    return pairs_dict
 
-def dtw_metric(s,t):
-    dtw,n,m=prepare_matrix(s,t)
-    for i in range(1,n+1):
-        for j in range(1,m+1):
-            t_i,t_j=s[i-1],t[j-1]
-            diff=t_i-t_j
-            cost= np.dot(diff,diff)          
-            dtw[i][j]=cost+min([dtw[i-1][j],dtw[i][j-1],dtw[i-1][j-1]])
-    return np.sqrt(dtw[n][m])
+def save(pairs,out_path):
+	with open(out_path, 'wb') as handle:
+		pickle.dump(pairs, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-def prepare_matrix(s,t):
-    n=len(s)
-    m=len(t)
-    cost_matrix=np.zeros((n+1,m+1),dtype=float)
-    for i in range(1,n+1):
-        cost_matrix[i][0]=np.inf
-    for i in range(1,m+1):
-        cost_matrix[0][i]=np.inf
-    return cost_matrix,n,m
+def read(in_path):
+    with open(in_path, 'rb') as handle:
+        return pickle.load(handle)
+
+def compute_dtw(in_path,out_path):
+	feats.make_dir(out_path)
+	paths={ dir_i:"%s/%s" %(out_path,dir_i) for dir_i in ["pairs","feats"]}
+	seq_dict=read_seqs(in_path)
+	pairs=make_pairwise_distance(seq_dict)
+	save(pairs,paths["pairs"])
+
+def read_seqs(in_path):
+	return {  path_i.split('/')[-1]:np.loadtxt(path_i,delimiter=',')
+	  			for path_i in feats.top_files(in_path)}
+
+
+def to_feats(in_path,out_path):
+	pairs=read(in_path)
+	dtw_feats=feats.Feats()
+	train,test=feats.split(pairs,names_only=True)
+#	raise Exception(train)
+	for name_i in pairs.keys():
+		dtw_feats[name_i]=np.array([pairs[name_i][name_j] for name_j in train])
+#		raise Exception(dtw_feats[name_i].shape)
+		print(dtw_feats[name_i].shape)
+	dtw_feats.save(out_path)
+
+in_path='../MSR/dtw/skew/seqs'
+compute_dtw(in_path,"skew")
+to_feats("skew/pairs","skew/dtw")
