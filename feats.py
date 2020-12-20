@@ -1,17 +1,4 @@
 import numpy as np
-import os,re
-
-class Name(str):
-	def __new__(cls, p_string):
-		return str.__new__(cls, p_string)
-
-	def clean(self):
-		digits=[ str(int(digit_i)) 
-				for digit_i in re.findall(r'\d+',self)]
-		return Name("_".join(digits))
-
-	def get_cat(self):
-		return int(self.split('_')[0])-1
 
 class Feats(dict):
 	def __init__(self, arg=[]):
@@ -73,6 +60,9 @@ class Feats(dict):
 		file_str.write(feat_txt)
 		file_str.close()
 
+def common_names(names1,names2):
+	return list(set(names1).intersection(set(names2)))
+
 def read_feats(in_path):
     if(type(in_path)==list):
         all_feats=[read_feats(path_i) for path_i in in_path]
@@ -92,35 +82,6 @@ def concat_feats(all_feats):
 	for feat_i in all_feats[1:]:
 		first+=feat_i
 	return first
-
-def common_names(names1,names2):
-	return list(set(names1).intersection(set(names2)))
-
-def split(dict,selector=None):
-    if(not selector):
-        selector=person_selector
-    train,test=[],[]
-    for name_i in dict.keys():
-        if(selector(name_i)):
-            train.append((name_i,dict[name_i]))
-        else:
-            test.append((name_i,dict[name_i]))
-    return train,test
-
-def natural_keys(text):
-    return [ atoi(c) for c in re.split('(\d+)', text) ]
-
-def atoi(text):
-    return int(text) if text.isdigit() else text
-
-def top_files(path):
-    paths=[ path+'/'+file_i for file_i in os.listdir(path)]
-    paths=sorted(paths,key=natural_keys)
-    return paths
-
-def person_selector(name_i):
-    person_i=int(name_i.split('_')[1])
-    return person_i%2==1
 
 if __name__ == "__main__":
 	dataset=read_feats('../action/feats')

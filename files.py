@@ -1,46 +1,28 @@
-import numpy as np
 import os,re
 
-class FeatDict(dict):
-    def __init__(self, arg):
-        super(FeatDict, self).__init__(arg)
-    
-    def dim(self):
-        return list(self.values())[0].shape
+class Name(str):
+	def __new__(cls, p_string):
+		return str.__new__(cls, p_string)
 
-    def split(self):
-        train,test=[],[]
-        for name_i in self.keys():
-            person=int(name_i.split("_")[1])
-            if((person%2)==1):
-                train.append(name_i)
-            else:
-                test.append(name_i)
-        train={ name_i:self[name_i] for name_i in train}
-        test={ name_i:self[name_i] for name_i in test}
-        return FeatDict(train),FeatDict(test)
-        
-    def as_dataset(self):
-        names=list(self.keys())
-        X=[self[name_i] for name_i in names]
-        y=[ int(name_i.split("_")[0])-1 
-                for name_i in names]
-        return np.array(X),y,names
+	def clean(self):
+		digits=[ str(int(digit_i)) 
+				for digit_i in re.findall(r'\d+',self)]
+		return Name("_".join(digits))
 
-def top_files(path):
-    paths=[ path+'/'+file_i for file_i in os.listdir(path)]
-    paths=sorted(paths,key=natural_keys)
-    return paths
+	def get_cat(self):
+		return int(self.split('_')[0])-1
 
-def bottom_files(path,full_paths=True):
-    all_paths=[]
-    for root, directories, filenames in os.walk(path):
-        if(not directories):
-            for filename_i in filenames:
-                path_i= root+'/'+filename_i if(full_paths) else filename_i
-                all_paths.append(path_i)
-    all_paths.sort(key=natural_keys)        
-    return all_paths
+def split(dict,selector=None,names_only=False):
+    if(not selector):
+        selector=person_selector
+    train,test=[],[]
+    for name_i in dict.keys():
+        example_i= name_i if(names_only) else (name_i,dict[name_i])
+        if(selector(name_i)):
+            train.append(example_i)
+        else:
+            test.append(example_i)
+    return train,test
 
 def natural_keys(text):
     return [ atoi(c) for c in re.split('(\d+)', text) ]
@@ -48,74 +30,15 @@ def natural_keys(text):
 def atoi(text):
     return int(text) if text.isdigit() else text
 
+def top_files(path):
+    paths=[ path+'/'+file_i for file_i in os.listdir(path)]
+    paths=sorted(paths,key=natural_keys)
+    return paths
+
 def make_dir(path):
     if(not os.path.isdir(path)):
         os.mkdir(path)
 
-def clean_str(name_i):
-    digits=[ str(int(digit_i)) for digit_i in re.findall(r'\d+',name_i)]
-    return "_".join(digits)
-
-def get_seqs(in_path):
-    paths=top_files(in_path)
-    seqs=[]
-    for path_i in paths:
-        postfix=path_i.split(".")[-1]
-        if(postfix=="npy"):
-            ts_i=np.load(path_i)
-        else:
-            data_i=np.genfromtxt(path_i, dtype=float, delimiter=",")
-        name_i=path_i.split('/')[-1]
-        name_i=clean_str(name_i)
-        seqs.append(  (name_i,data_i))
-    return dict(seqs)
-
-def save_seqs(seq_dict,out_path):
-    make_dir(out_path)
-    for name_i,seq_i in seq_dict.items():
-        out_i="%s/%s" %(out_path,name_i)
-        np.savetxt(out_i,seq_i,fmt='%.4e', delimiter=',')
-
-def save_feats(X,names,out_path):
-    feats=""
-    for i,name_i in enumerate(names):
-        data_i=np.array2string(X[i],separator=",")
-        data_i=re.sub(r"\[|\]|\s+","",data_i)
-        feats+="%s#%s\n"%(data_i,name_i)
-    f= open(out_path,"w+")
-    f.write(feats)
-    f.close()
-
-def get_feats(in_path):
-    print(in_path)
-    f= open(in_path,"r")
-    lines=f.readlines()
-    f.close()
-    lines=[ line_i.split("#") for line_i in lines]
-    feat_dict={ name_i.strip():np.fromstring(data_i,sep=",")
-                    for data_i,name_i in lines}
-    return FeatDict(feat_dict)
-
-def unify_feats(seqs,out_path):
-    if(type(seqs[0])==str):
-        seqs=[get_feats(path_i) for path_i in seqs]
-    names=list(seqs[0].keys())
-    def helper(name_i):
-        all_feats=[seq_i[name_i] for seq_i in seqs]
-        all_feats=np.concatenate(all_feats,axis=0)
-        return all_feats
-    feat_dict=FeatDict({ name_i: helper(name_i)
-                for name_i in names})
-    X,y,names=feat_dict.as_dataset()
-    save_feats(X,names,out_path)
-
-def split(seq_dict,selector=None):
-    if(not selector):
-        selector=lambda name_i: int(name_i.split("_")[1])%2!=0
-    train,test={},{}  
-    for name_i,seq_i in seq_dict.items():
-        if(selector(name_i)):
-            train[name_i]=seq_i
-        else:
-            test[name_i]=seq_i
-    return train,test
+def person_selector(name_i):
+    person_i=int(name_i.split('_')[1])
+    return person_i%2==1
