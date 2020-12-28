@@ -1,4 +1,5 @@
 import numpy as np
+import files
 
 class Feats(dict):
 	def __init__(self, arg=[]):
@@ -19,10 +20,10 @@ class Feats(dict):
 		return list(self.values())[0].shape[0]
 
 	def names(self):
-		return sorted(self.keys(),key=natural_keys) 
+		return sorted(self.keys(),key=files.natural_keys) 
 	
 	def split(self,selector=None):
-		train,test=split(self,selector)
+		train,test=files.split(self,selector)
 		return Feats(train),Feats(test)
 
 	def to_dataset(self):
@@ -72,7 +73,7 @@ def read_feats(in_path):
     for line_i in lines:
         raw=line_i.split('#')
         if(len(raw)>1):
-            data_i,info_i=raw[0],Name(raw[-1])
+            data_i,info_i=raw[0],files.Name(raw[-1])
             info_i=info_i.clean()
             feat_dict[info_i]=np.fromstring(data_i,sep=',')
     return feat_dict

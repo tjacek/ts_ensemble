@@ -37,9 +37,10 @@ def select_clf(common_path,binary_path=None,binary=False):
 	acc= (acc-np.mean(acc))/np.std(acc)
 	s_datasets=[data_i 
 			for i,data_i in enumerate(datasets)
-				if(acc[i]>-1)]
+				if(acc[i]>-0.2)]
 	results=[ train.train_model(data_i,binary)
 				for data_i in s_datasets]
+	print(len(results))
 	return voting(results)
 
 def cross_acc(datasets):
@@ -54,10 +55,15 @@ def cross_acc(datasets):
     	acc.append(result_i.get_acc())
     return np.array(acc)
 
+if __name__ == "__main__":
+	dataset="3DHOI_agum"
+	common_path=['../%s/dtw/max_z/person' % '3DHOI',
+             '../%s/dtw/corl/person' % '3DHOI']
+#             '../agum/skew/dtw']
+#	common_path=['max_z/person','corl/person']
+	votes=ensemble(['max_z/dtw','corl/dtw','skew/dtw'],None)#'../%s/ens/feats'%dataset)
+#	votes=select_clf('true/corl.txt',None)#'../3DHOI/ens/feats')
+	votes.report()
+	print(votes.get_acc())
+#	print(votes.get_cf("cf/3DHOI"))
 
-common_path=['../agum/corl/person',
-             '../agum/max_z/person']
-#             '../agum/skew/person']
-votes=select_clf(common_path,'../action/ens/feats')
-votes.report()
-print(votes.get_acc())

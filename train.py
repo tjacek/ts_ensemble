@@ -68,3 +68,8 @@ def simple_exp(dataset):
 	print(result.get_acc())
 #	print(classification_report(y_test, y_pred,digits=4))
 #	print(accuracy_score(y_test,y_pred))
+
+if __name__ == "__main__":
+	result=train_model("../ActionClassifier/lstm/feats",binary=True)
+	result.report()
+	print(result.get_acc())
