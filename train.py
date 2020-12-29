@@ -1,9 +1,9 @@
-import numpy as np
+import numpy as np,os
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import classification_report
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import confusion_matrix
-import feats
+import feats,files
 
 class Result(object):
 	def __init__(self,y_true,y_pred,names):
@@ -64,12 +64,11 @@ def train_model(dataset,binary=True):
 	return Result(y_test,y_pred,test.names())
 
 def simple_exp(dataset):
+	if(os.path.isdir(dataset)):
+		dataset=files.top_files(dataset)
 	result=train_model(dataset)
-	print(result.get_acc())
-#	print(classification_report(y_test, y_pred,digits=4))
-#	print(accuracy_score(y_test,y_pred))
-
-if __name__ == "__main__":
-	result=train_model("../ActionClassifier/lstm/feats",binary=True)
 	result.report()
 	print(result.get_acc())
+
+if __name__ == "__main__":
+	simple_exp("../MSR/ens/feats")
