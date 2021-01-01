@@ -1,8 +1,13 @@
 import numpy as np
-import train,feats
+import train,feats,files
 
 def ensemble(common_path,binary_path=None,binary=False):
-	datasets=read_datasets(common_path,binary_path)
+	if(type(binary_path)==list):
+		datasets=[]
+		for binary_i in binary_path:
+			datasets+=read_datasets(common_path,binary_i)
+	else:
+		datasets=read_datasets(common_path,binary_path)
 	results=[ train.train_model(data_i,binary)
 				for data_i in datasets]
 	return voting(results)
@@ -18,7 +23,7 @@ def read_datasets(common_path,binary_path):
 		common=feats.read_feats(common_path)
 	if(binary_path):
 		binary=[feats.read_feats(path_i)
-					for path_i in feats.top_files(binary_path)]
+					for path_i in files.top_files(binary_path)]
 	if(not common_path):
 		return binary
 	if(not binary_path):
@@ -60,8 +65,8 @@ if __name__ == "__main__":
 	common_path=['../%s/dtw/max_z/person' % '3DHOI',
              '../%s/dtw/corl/person' % '3DHOI']
 #             '../agum/skew/dtw']
-#	common_path=['max_z/person','corl/person']
-	votes=ensemble(['max_z/dtw','corl/dtw','skew/dtw'],None)#'../%s/ens/feats'%dataset)
+	common_path='../3DHOI/actions/feats'
+	votes=ensemble(common_path,['../3DHOI/agum/ens/feats', '../3DHOI/ens/feats'])
 #	votes=select_clf('true/corl.txt',None)#'../3DHOI/ens/feats')
 	votes.report()
 	print(votes.get_acc())
