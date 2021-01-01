@@ -44,6 +44,14 @@ class Result(object):
 			np.savetxt(out_path,cf_matrix,delimiter=",",fmt='%.2e')
 		return cf_matrix
 
+	def get_error(self):
+		errors=[]
+		for i,y_i in enumerate(self.y_true):
+			if(y_i!=self.y_pred[i]):
+				errors.append( (y_i,self.y_pred[i],self.names[i]))
+		return errors
+
+
 def train_model(dataset,binary=True):
 	if(type(dataset)==str or type(dataset)==list):
 		dataset=feats.read_feats(dataset)
@@ -68,7 +76,8 @@ def simple_exp(dataset):
 		dataset=files.top_files(dataset)
 	result=train_model(dataset)
 	result.report()
+	print(result.get_error())
 	print(result.get_acc())
 
 if __name__ == "__main__":
-	simple_exp("../MSR/ens/feats")
+	simple_exp("corl/dtw")
