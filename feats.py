@@ -84,6 +84,14 @@ def concat_feats(all_feats):
 		first+=feat_i
 	return first
 
+def agum_unify(large,small):
+	new_feats=Feats()
+	for name_i in large.keys():
+		x=large[name_i]
+		y=small[name_i.get_id()]
+		new_feats[name_i]=np.concatenate([x,y],axis=0)			
+	return new_feats
+
 if __name__ == "__main__":
 	dataset=read_feats('../action/feats')
 	print(dataset.dim())
