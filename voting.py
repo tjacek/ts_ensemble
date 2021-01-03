@@ -6,6 +6,10 @@ def ensemble(common_path,binary_path=None,binary=False,agum=True):
 		datasets=[]
 		for binary_i in binary_path:
 			datasets+=read_datasets(common_path,binary_i,agum)
+	elif(type(common_path)==list):
+		datasets=[]
+		for common_i in common_path:
+			datasets+=read_datasets(common_i,binary_path,agum)
 	else:
 		datasets=read_datasets(common_path,binary_path,agum)
 	results=[ train.train_model(data_i,binary)
@@ -68,8 +72,8 @@ if __name__ == "__main__":
 	common_path=['../%s/dtw/max_z/person' % '3DHOI',
              '../%s/dtw/corl/person' % '3DHOI']
 #             '../agum/skew/dtw']
-	common_path='../3DHOI/agum/lstm/feats'
-	votes=ensemble(common_path,'../3DHOI/agum/ens/feats',agum=False)#, '../3DHOI/ens/feats'])
+	common_path=['../3DHOI/agum/ae/feats','../3DHOI/ae/feats']
+	votes=ensemble(common_path,'../3DHOI/agum/ens/feats',agum=True)#, '../3DHOI/ens/feats'])
 #	votes=select_clf('true/corl.txt',None)#'../3DHOI/ens/feats')
 	votes.report()
 	print(votes.get_acc())
