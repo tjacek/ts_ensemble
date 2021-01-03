@@ -1,15 +1,18 @@
 import numpy as np
 import scipy.stats
-import files
+import files,feats
 
 def compute_stats(in_path,out_path):
-    seqs=files.get_seqs(in_path)
-    feats={ name_i:EBTF(seq_i) 
-            for name_i,seq_i in seqs.items()}
-    feats=files.FeatDict(feats)
-    X,y=feats.as_dataset()
-    names=list(feats.keys())
-    files.save_feats(X,names,out_path)
+    seqs=get_seqs(in_path)
+    feat_dict=feats.Feats()
+#    feats={ name_i:EBTF(seq_i) 
+    for name_i,seq_i in seqs.items():
+        feat_dict[name_i]=EBTF(seq_i)
+    feat_dict.save(out_path)
+#    feats=files.FeatDict(feats)
+#    X,y=feats.as_dataset()
+#    names=list(feats.keys())
+#    files.save_feats(X,names,out_path)
 
 def EBTF(feat_i):
     if( len(feat_i.shape)>1):
@@ -25,4 +28,8 @@ def time_corl(feat_i):
     x_i=np.arange(float(n_size),step=1.0)
     return scipy.stats.pearsonr(x_i,feat_i)[0]
 
-compute_stats("full/seqs","full/feats.txt")
+def get_seqs(in_path):
+    return { path_i.split('/')[-1]:np.load(path_i) 
+                for path_i in files.top_files(in_path)}
+
+compute_stats("../3DHOI/ae/seqs","../3DHOI/ae/feats.txt")
