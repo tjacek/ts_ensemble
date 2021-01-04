@@ -9,15 +9,16 @@ def dtw_exp(in_path,feat_type,out=False):
         feat_set=feat_type,out=out)
     dtw.make_dtw_feats(feat_type)
 
+def ae_exp(in_path,out_path):
+    files.make_dir(out_path)
+    seq_dict=files.get_seqs(in_path)
+    pairs=dtw.make_pairwise_distance(seq_dict)
+    save(pairs, "%s/%s" % (out_path,"pairs"))
+
 def unify_exp(paths,out_path,filename="dtw"):
     paths=["%s/%s" % (path_i,filename) 
             for path_i in paths]
     files.unify_feats(paths,out_path)
-#    feats=[]
-#    for path_i in paths:
-#        in_i="%s/%s" % (path_i,filename)
-#        feat_i=files.get_feats(in_i)
-#        feats.append(feat_i)
 
 
 def scaled_exp(in_path,out_path):
@@ -47,4 +48,5 @@ def exp(in_path,out_path):
 
 if __name__ == '__main__':
 #dtw_exp("box","skew",out=True)
-    unify_exp(["max_z","skew","corl"],"full2",filename="feats")
+#    unify_exp(["max_z","skew","corl"],"full2",filename="feats")
+    ae_exp("../3DHOI_proj/agum/ae/seqs","../3DHOI_proj/agum/ae/dtw")

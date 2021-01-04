@@ -1,16 +1,20 @@
+import numpy as np
 import os,re
 
 class Name(str):
-	def __new__(cls, p_string):
-		return str.__new__(cls, p_string)
+    def __new__(cls, p_string):
+        return str.__new__(cls, p_string)
 
-	def clean(self):
-		digits=[ str(int(digit_i)) 
-				for digit_i in re.findall(r'\d+',self)]
-		return Name("_".join(digits))
+    def clean(self):
+        digits=[ str(int(digit_i)) 
+                for digit_i in re.findall(r'\d+',self)]
+        return Name("_".join(digits))
 
-	def get_cat(self):
-		return int(self.split('_')[0])-1
+    def get_id(self):
+        return "_".join(self.split('_')[:3])
+
+    def get_cat(self):
+        return int(self.split('_')[0])-1
 
 def split(dict,selector=None,names_only=False):
     if(not selector):
@@ -42,3 +46,7 @@ def make_dir(path):
 def person_selector(name_i):
     person_i=int(name_i.split('_')[1])
     return person_i%2==1
+
+def get_seqs(in_path):
+    return { path_i.split('/')[-1]:np.load(path_i) 
+                for path_i in top_files(in_path)}

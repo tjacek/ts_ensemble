@@ -37,10 +37,12 @@ def read_datasets(common_path,binary_path,agum=False):
 	else:
 		return [common+binary_i for binary_i in binary]
 
-def voting(results):
+def voting(results,binary=True):
+#	raise Exception(results[0].as_numpy()[0])
 	votes=np.array([ result_i.as_numpy() 
 				for result_i in results])
 	votes=np.sum(votes,axis=0)
+#	raise Exception(votes[0])
 	return train.Result(results[0].y_true,votes,results[0].names)
 
 def select_clf(common_path,binary_path=None,binary=False):
@@ -72,8 +74,8 @@ if __name__ == "__main__":
 	common_path=['../%s/dtw/max_z/person' % '3DHOI',
              '../%s/dtw/corl/person' % '3DHOI']
 #             '../agum/skew/dtw']
-	common_path=['../3DHOI/agum/ae/feats','../3DHOI/ae/feats']
-	votes=ensemble(common_path,'../3DHOI/agum/ens/feats',agum=True)#, '../3DHOI/ens/feats'])
+	common_path=['../3DHOI_proj/old2/simple/basic/feats','../3DHOI_proj/old2/agum/basic/feats']#,'../3DHOI_proj/ae/feats']
+	votes=ensemble(common_path,'../3DHOI_proj/old2/ens/stats/feats',agum=False,binary=True)#, '../3DHOI/ens/feats'])
 #	votes=select_clf('true/corl.txt',None)#'../3DHOI/ens/feats')
 	votes.report()
 	print(votes.get_acc())
